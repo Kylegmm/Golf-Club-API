@@ -14,13 +14,13 @@ public class TournamentController {
     @Autowired
     private TournamentService tournamentService;
 
-    @PostMapping
-    public ResponseEntity<Tournament> addTournament(@RequestBody Tournament tournament) {
-        return ResponseEntity.ok(tournamentService.addTournament(tournament));
-    }
+    // Existing methods...
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Tournament>> searchByLocation(@RequestParam String location) {
-        return ResponseEntity.ok(tournamentService.searchByLocation(location));
+    @PostMapping("/{tournamentId}/addMember/{memberId}")
+    public ResponseEntity<Tournament> addMemberToTournament(
+            @PathVariable Long tournamentId,
+            @PathVariable Long memberId) {
+        Tournament updatedTournament = tournamentService.addMemberToTournament(tournamentId, memberId);
+        return ResponseEntity.ok(updatedTournament);
     }
 }
