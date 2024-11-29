@@ -82,6 +82,3 @@ Database Name: golf
 Username: root
 Password: admin
 You can view or modify these settings in docker-compose.yml or application.properties.
-
-Known Issues
-GET /members may not return data under certain conditions. Verify database entries before testing.
