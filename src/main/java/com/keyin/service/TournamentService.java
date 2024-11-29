@@ -10,13 +10,55 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Service
 public class TournamentService {
+
     @Autowired
     private TournamentRepository tournamentRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    // CRUD Operations for Tournaments
+
+    // Create a new tournament
+    public Tournament createTournament(Tournament tournament) {
+        return tournamentRepository.save(tournament);
+    }
+
+    // Get a tournament by ID
+    public Tournament getTournamentById(Long id) {
+        return tournamentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + id));
+    }
+
+    // Update an existing tournament
+    public Tournament updateTournament(Long id, Tournament updatedTournament) {
+        Tournament existingTournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + id));
+
+        existingTournament.setStartDate(updatedTournament.getStartDate());
+        existingTournament.setEndDate(updatedTournament.getEndDate());
+        existingTournament.setLocation(updatedTournament.getLocation());
+        existingTournament.setEntryFee(updatedTournament.getEntryFee());
+        existingTournament.setCashPrize(updatedTournament.getCashPrize());
+
+        return tournamentRepository.save(existingTournament);
+    }
+
+    // Delete a tournament
+    public boolean deleteTournament(Long id) {
+        if (tournamentRepository.existsById(id)) {
+            tournamentRepository.deleteById(id);
+            return true;
+        } else {
+            throw new IllegalArgumentException("Tournament not found with ID: " + id);
+        }
+    }
+
+    // Search Methods
 
     public Page<Tournament> searchByLocation(String location, Pageable pageable) {
         return tournamentRepository.findByLocation(location, pageable);
@@ -30,43 +72,36 @@ public class TournamentService {
         return tournamentRepository.findByLocationAndStartDate(location, startDate, pageable);
     }
 
-    @Autowired
-    private MemberRepository memberRepository;
+    // Member Management in Tournaments
 
     public Tournament addMemberToTournament(Long tournamentId, Long memberId) {
-        // Fetch the tournament
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + tournamentId));
 
-        // Fetch the member
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + memberId));
 
-        // Add the member to the tournament
         tournament.getMembers().add(member);
 
-        // Save and return the updated tournament
         return tournamentRepository.save(tournament);
     }
+
     public Set<Member> getMembersInTournament(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + tournamentId));
+
         return tournament.getMembers();
     }
+
     public Tournament removeMemberFromTournament(Long tournamentId, Long memberId) {
-        // Fetch the tournament
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + tournamentId));
 
-        // Fetch the member
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + memberId));
 
-        // Remove the member
         tournament.getMembers().remove(member);
 
-        // Save the updated tournament
         return tournamentRepository.save(tournament);
     }
 }
-
