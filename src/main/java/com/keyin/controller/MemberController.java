@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/members")
@@ -17,57 +16,45 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
-    // Add a new member
+    // Add a member
     @PostMapping
     public ResponseEntity<Member> addMember(@RequestBody Member member) {
         return ResponseEntity.status(HttpStatus.CREATED).body(memberService.addMember(member));
     }
 
-    // Get a member by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Member> getMemberById(@PathVariable Long id) {
-        Optional<Member> member = memberService.getMemberById(id);
-        return member.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    // Retrieve all members
+    @GetMapping
+    public ResponseEntity<List<Member>> getAllMembers() {
+        return ResponseEntity.ok(memberService.getAllMembers());
     }
 
-    // Update an existing member
+    // Retrieve member by ID
+    @GetMapping("/{id}")
+    public Member getMemberById(@PathVariable Long id) {
+        return memberService.getMemberById(id); // Use memberService instead of memberRepository
+    }
+
+    // Update member
     @PutMapping("/{id}")
     public ResponseEntity<Member> updateMember(
             @PathVariable Long id,
             @RequestBody Member updatedMember) {
-        try {
-            Member member = memberService.updateMember(id, updatedMember);
-            return ResponseEntity.ok(member);
-        } catch (IllegalArgumentException e) {
+        Member member = memberService.updateMember(id, updatedMember);
+        if (member == null) {
             return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(member);
     }
 
-    // Delete a member by ID
+    // Delete member
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
-        try {
-            memberService.deleteMember(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Get all members
-    @GetMapping
-    public ResponseEntity<List<Member>> getAllMembers() {
-        List<Member> members = memberService.getAllMembers();
-        return ResponseEntity.ok(members);
+    public boolean deleteMember(@PathVariable Long id) {
+        return memberService.deleteMember(id); // Use memberService instead of memberRepository
     }
 
     // Search members by name
     @GetMapping("/search")
     public ResponseEntity<List<Member>> searchByName(@RequestParam String name) {
-        List<Member> members = memberService.searchByName(name);
-        if (members.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(members);
+        return ResponseEntity.ok(memberService.searchByName(name));
     }
 }
