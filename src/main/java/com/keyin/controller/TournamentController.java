@@ -20,8 +20,43 @@ import java.util.Set;
 @RestController
 @RequestMapping("/tournaments")
 public class TournamentController {
+
     @Autowired
     private TournamentService tournamentService;
+
+    @PostMapping
+    public ResponseEntity<Tournament> createTournament(@RequestBody Tournament tournament) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(tournamentService.createTournament(tournament));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Tournament> getTournamentById(@PathVariable Long id) {
+        Tournament tournament = tournamentService.getTournamentById(id);
+        if (tournament == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(tournament);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Tournament> updateTournament(
+            @PathVariable Long id,
+            @RequestBody Tournament updatedTournament) {
+        Tournament tournament = tournamentService.updateTournament(id, updatedTournament);
+        if (tournament == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(tournament);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTournament(@PathVariable Long id) {
+        boolean deleted = tournamentService.deleteTournament(id);
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping("/{tournamentId}/addMember/{memberId}")
     public ResponseEntity<Tournament> addMemberToTournament(
@@ -30,11 +65,13 @@ public class TournamentController {
         Tournament updatedTournament = tournamentService.addMemberToTournament(tournamentId, memberId);
         return ResponseEntity.ok(updatedTournament);
     }
+
     @GetMapping("/{tournamentId}/members")
     public ResponseEntity<Set<Member>> getMembersInTournament(@PathVariable Long tournamentId) {
         Set<Member> members = tournamentService.getMembersInTournament(tournamentId);
         return ResponseEntity.ok(members);
     }
+
     @DeleteMapping("/{tournamentId}/removeMember/{memberId}")
     public ResponseEntity<Tournament> removeMemberFromTournament(
             @PathVariable Long tournamentId,
@@ -42,6 +79,7 @@ public class TournamentController {
         Tournament updatedTournament = tournamentService.removeMemberFromTournament(tournamentId, memberId);
         return ResponseEntity.ok(updatedTournament);
     }
+
     @GetMapping("/search")
     public ResponseEntity<Page<Tournament>> searchTournaments(
             @RequestParam(required = false) String location,
@@ -50,7 +88,6 @@ public class TournamentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "startDate,asc") String sort) {
 
-        // Split sort parameter into field and direction
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
         Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
@@ -69,5 +106,4 @@ public class TournamentController {
             return ResponseEntity.badRequest().build();
         }
     }
-
 }
